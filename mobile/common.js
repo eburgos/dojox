@@ -22,6 +22,27 @@ define([
 	// tell dojo/touch to generate synthetic clicks immediately
 	// and regardless of preventDefault() calls on touch events
 	win.doc.dojoClick = true;
+	/// ... but let user disable this by removing dojoClick from the document
+	if(has("touch")){
+		// Do we need to send synthetic clicks when preventDefault() is called on touch events?
+		// This is normally true on anything except Android 4.1+ and IE10, but users reported
+		// exceptions like Galaxy Note 2. So let's use a has("clicks-prevented") flag, and let
+		// applications override it through data-dojo-config="has:{'clicks-prevented':true}" if needed.
+		has.add("clicks-prevented", !(has("android") >= 4.1 || has("ie") >= 10));
+		if(has("clicks-prevented")){
+			dm._sendClick = function(target, e){
+				// dojo/touch will send a click if dojoClick is set, so don't do it again.
+				for(var node = target; node; node = node.parentNode){
+					if(node.dojoClick){
+						return;
+					}
+				}
+				var ev = win.doc.createEvent("MouseEvents"); 
+				ev.initMouseEvent("click", true, true, win.global, 1, e.screenX, e.screenY, e.clientX, e.clientY); 
+				target.dispatchEvent(ev);
+			};
+		}
+	}
 
 	dm.getScreenSize = function(){
 		// summary:
@@ -282,7 +303,7 @@ define([
 		domClass.add(win.body(), "mblBackground");
 		if(config["mblAndroidWorkaroundButtonStyle"] !== false && has('android')){
 			// workaround for the form button disappearing issue on Android 2.2-4.0
-			domConstruct.create("style", {innerHTML:"BUTTON,INPUT[type='button'],INPUT[type='submit'],INPUT[type='reset'],INPUT[type='file']::-webkit-file-upload-button{-webkit-appearance:none;}"}, win.doc.head, "first");
+			domConstruct.create("style", {innerHTML:"BUTTON,INPUT[type='button'],INPUT[type='submit'],INPUT[type='reset'],INPUT[type='file']::-webkit-file-upload-button{-webkit-appearance:none;} audio::-webkit-media-controls-play-button,video::-webkit-media-controls-play-button{-webkit-appearance:media-play-button;} video::-webkit-media-controls-fullscreen-button{-webkit-appearance:media-fullscreen-button;}"}, win.doc.head, "first");
 		}
 		if(has('mblAndroidWorkaround')){
 			// add a css class to show view offscreen for android flicker workaround

@@ -255,6 +255,8 @@ define([
 							c.style.display = "none";
 							c.style[css3.name("transform")] = "";
 							c.style.left = "0px"; // top/left mode needs this
+							// reset the temporaty padding on the container node
+							c.style.paddingTop = "";
 						}
 					}
 				}, this);

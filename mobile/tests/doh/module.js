@@ -15,12 +15,14 @@ define([
      "./edgetoedgestorelist/module",
      "./expandingtextarea/module",
      "./filteredlistmixin/module",
+     "./fixedbars/module",
      "./fixedsplitter/module",
      "./heading/module",
      "./iconcontainer/module",
      "./iconmenu/module",
      "./listitem/module",
      "./longlistmixin/module",
+     "./opener/module",
      "./pageindicator/module",
      "./progressindicator/module",
      "./radiobutton/module",
@@ -46,7 +48,6 @@ define([
 	try{
 		doh.registerUrl("dojox.mobile.tests.doh.URLProperty", require.toUrl("./TestURLProp.html"),999999);
 		doh.registerUrl("dojox.mobile.tests.doh.URLProperty", require.toUrl("./TestURLProp2.html"),999999);
-		doh.registerUrl("dojox.mobile.tests.doh.CustomFixedBarsTests", require.toUrl("./CustomFixedBarsTests.html"),999999);
 	}catch(e){
 		doh.debug(e);
 	}

@@ -204,8 +204,8 @@ define([
 			// scrolling machinery. To avoid this misbehavior:
 			if(win.global.addEventListener){ // all supported browsers but IE8
 				// (for IE8, using attachEvent is not a solution, because it only works in bubbling phase)
-				win.global.addEventListener("scroll", function(e){
-					if(_this.domNode.style.display === 'none'){ return; }
+				this._onScroll = function(e){
+					if(!_this.domNode || _this.domNode.style.display === 'none'){ return; }
 					var scrollTop = _this.domNode.scrollTop;
 					var scrollLeft = _this.domNode.scrollLeft; 
 					var pos;
@@ -216,7 +216,8 @@ define([
 						_this.domNode.scrollTop = 0; 
 						_this.scrollTo({x: pos.x - scrollLeft, y: pos.y - scrollTop}); // no animation 
 					}
-				}, true);
+				};
+				win.global.addEventListener("scroll", this._onScroll, true);
 			}
 		},
 
@@ -236,6 +237,10 @@ define([
 					connect.disconnect(this._ch[i]);
 				}
 				this._ch = null;
+			}
+			if(this._onScroll && win.global.removeEventListener){ // all supported browsers but IE8
+				win.global.removeEventListener("scroll", this._onScroll, true);
+				this._onScroll = null;
 			}
 		},
 
@@ -547,6 +552,16 @@ define([
 				if(clicked){ // clicked, not dragged or flicked
 					this.hideScrollBar();
 					this.removeCover();
+					// need to send a synthetic click?
+					if(has("touch") && has("clicks-prevented") && !this.isFormElement(e.target)){
+						var elem = e.target;
+						if(elem.nodeType != 1){
+							elem = elem.parentNode;
+						}
+						setTimeout(function(){
+							dm._sendClick(elem, e);
+						});
+					}
 					return;
 				}
 				speed = this._speed = this.getSpeed();
@@ -564,15 +579,17 @@ define([
 
 			if(this.adjustDestination(to, pos, dim) === false){ return; }
 
-			if(this.scrollDir == "v" && dim.c.h < dim.d.h){ // content is shorter than display
-				this.slideTo({y:0}, 0.3, "ease-out"); // go back to the top
-				return;
-			}else if(this.scrollDir == "h" && dim.c.w < dim.d.w){ // content is narrower than display
-				this.slideTo({x:0}, 0.3, "ease-out"); // go back to the left
-				return;
-			}else if(this._v && this._h && dim.c.h < dim.d.h && dim.c.w < dim.d.w){
-				this.slideTo({x:0, y:0}, 0.3, "ease-out"); // go back to the top-left
-				return;
+			if(this.constraint){
+				if(this.scrollDir == "v" && dim.c.h < dim.d.h){ // content is shorter than display
+					this.slideTo({y:0}, 0.3, "ease-out"); // go back to the top
+					return;
+				}else if(this.scrollDir == "h" && dim.c.w < dim.d.w){ // content is narrower than display
+					this.slideTo({x:0}, 0.3, "ease-out"); // go back to the left
+					return;
+				}else if(this._v && this._h && dim.c.h < dim.d.h && dim.c.w < dim.d.w){
+					this.slideTo({x:0, y:0}, 0.3, "ease-out"); // go back to the top-left
+					return;
+				}
 			}
 
 			var duration, easing = "ease-out";

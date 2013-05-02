@@ -5,14 +5,16 @@ define([
 	"dojo/_base/window",
 	"dojo/dom-class",
 	"dojo/dom-construct",
-	"dijit/_Contained",
-	"dijit/_WidgetBase",
-	"./scrollable",
 	"dojo/has", 
 	"dojo/has!dojo-bidi?dojox/mobile/bidi/SpinWheelSlot",
 	"dojo/touch",
-	"dojo/on"
-], function(dojo, array, declare, win, domClass, domConstruct, Contained, WidgetBase, Scrollable, has, BidiSpinWheelSlot, touch, on){
+	"dojo/on",
+	"dijit/_Contained",
+	"dijit/_WidgetBase",
+	"./scrollable",
+	"./common"
+], function(dojo, array, declare, win, domClass, domConstruct, has, BidiSpinWheelSlot, 
+	touch, on, Contained, WidgetBase, Scrollable){
 
 	// module:
 	//		dojox/mobile/SpinWheelSlot
@@ -456,6 +458,15 @@ define([
 		},
 
 		resize: function(e){
+			// Correct internal variables & adjust slot panels
+			var items = this.panelNodes[1].childNodes;
+			// TODO investigate - the position is calculated incorrectly for 
+			// windows theme, disable this logic for now.
+			if(items.length > 0 && !has("windows-theme")){ // empty slot?
+				this._itemHeight = items[0].offsetHeight;
+				this.centerPos = this.getParent().centerPos;
+				this.adjust();
+			}
 			if(this._pendingValue){
 				this.set("value", this._pendingValue);
 			}
