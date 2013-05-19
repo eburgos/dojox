@@ -181,7 +181,7 @@ dojox.xml.parser.innerXML = function(/*Node*/node){
 	if(node.innerXML){
 		return node.innerXML;	//	String
 	}else if(node.xml){
-		return node.xml;		//	String
+        return array.map(node.childNodes, function (node) { return node.xml; }).join("");//	String		//	String
 	}else if(typeof XMLSerializer != "undefined"){
 		var serializer = new XMLSerializer();
 
